@@ -1,4 +1,4 @@
-package milkyway;
+package milkyway.threadedPP;
 
 import java.util.*;
 import java.util.concurrent.*;

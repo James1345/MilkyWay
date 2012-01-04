@@ -1,4 +1,4 @@
-package milkyway;
+package milkyway.threadedPP;
 
 import java.lang.reflect.InvocationTargetException;
 import java.awt.*;
