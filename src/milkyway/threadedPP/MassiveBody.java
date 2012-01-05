@@ -126,7 +126,9 @@ public class MassiveBody extends BaseBody {
     public void step(){
         // Increment by correct step.
         for(int i = 0 ; i < dim; i++){
-            pos[i] += (v[i] += a[i]*step)*step;
+            v[i] += a[i]*step/2;
+            pos[i] += v[i]*step;
+            v[i] += a[i]*step/2;
         }
     }
     
