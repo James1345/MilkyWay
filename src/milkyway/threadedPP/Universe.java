@@ -1,5 +1,7 @@
 package milkyway.threadedPP;
 
+import milkyway.*;
+
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -15,12 +17,12 @@ import java.util.concurrent.*;
  * 
  * @author james
  */
-public class Universe {
+public class Universe extends BaseUniverse{
     
     // Global Singleton
     private static Universe one = null;
-    public static void init(int dimensions, double G, double step){
-        one = new Universe(dimensions, G, step);
+    public static void init(double G, double step){
+        one = new Universe(G, step);
     }
     public static Universe get(){return one;}
     
@@ -28,23 +30,17 @@ public class Universe {
     /**
      * Globally accessible list of Massive Bodies.
      */
-    public final List<MassiveBody> bodies = new ArrayList<MassiveBody>();
-    
-    // global value of G;
-    public final double G; // 6.67e-11;
+   
     
     // Global number of Dimensions of the universe
     public final int Dimensions;
     
-    // Ammount of time to step per cycle
-    public final double Step;
-    
     // Instance methods
     CyclicBarrier barrier;
-    private Universe(int dimensions, double G, double step){
-        this.Dimensions = dimensions;
-        this.Step = step;
-        this.G = G;
+    private Universe(double G, double step){
+        super(G, step);
+        this.Dimensions = DIM;
+        this.bodies = new ArrayList<BaseBody>();
     }
 
     
@@ -54,8 +50,8 @@ public class Universe {
     
     public void start(){
         barrier = new CyclicBarrier(bodies.size()); 
-        for(MassiveBody body : bodies){
-            (new MassiveBodyThread(body, barrier)).start();
+        for(BaseBody body : bodies){
+            (new MassiveBodyThread((MassiveBody)body, barrier)).start();
         }
     }
     

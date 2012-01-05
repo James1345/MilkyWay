@@ -2,21 +2,24 @@ package milkyway.threadedPP;
 
 import java.awt.Color;
 import java.util.*;
+import milkyway.BaseBody;
 import static java.lang.Math.*;
+
 
 /**
  * Represents a Massive Body in the universe.
  * 
  * This class represents a massive body in the universe.
+ * As it was made before BaseBody, there is some duplication of effort, 
+ * as it was made to match the specification of that class while still
+ * using its own methods.
  * 
  * @author james
  */
-public class MassiveBody {
+public class MassiveBody extends BaseBody {
     
     // Essential properties
     public final Color color;
-    protected double mass = 0;
-    protected double radius = 0;
     protected double[] pos = null;
     protected double[] v = null;
     
@@ -28,10 +31,15 @@ public class MassiveBody {
     protected final double step;
     
     public MassiveBody(double mass, double radius, double[] pos, double[] v){
-        this.mass = mass + random(); // add some random to masses so that one of the two is always greater
+        
+        super(0,0,0,0,0,0,0,0, null); // Bodge fix to satisfy compiler
+        
+        this.mass = mass + random()*pow(10,Math.getExponent(mass)/8); // add a small random to masses so that one of the two is always greater
         this.radius = radius;
         this.pos = pos;
         this.v = v;
+        
+        
         this.color = null;
         // get values from Universe
         universe = Universe.get();
@@ -60,9 +68,11 @@ public class MassiveBody {
      * more efficient, rather than the intuitive order from the theory).
      * Explanations for the changes are in the comments.
      */
+    @Override
     public void update(){
         Arrays.fill(a, 0);
-        for(MassiveBody body : universe.bodies){
+        for(BaseBody bbody : universe.getBodies()){
+            MassiveBody body = (MassiveBody)bbody;
             if(this == body) continue; // do not compare this to itself.
             
             //square of the distance between the two bodies.
@@ -87,7 +97,7 @@ public class MassiveBody {
              * of the vector (which is the root of the already calculated r2)); 
              * we simply divide the acc variable by a further factor of r.
              */
-            double acc = (universe.G * body.mass)/pow(r2 = sqrt(r2), 3);
+            double acc = (universe.G * body.mass)/pow((r2 = sqrt(r2)), 3);
             
             
             // Check for collisions and this having the greater mass
@@ -97,7 +107,7 @@ public class MassiveBody {
                 for(int i = 0; i < dim; i++)
                     v[i] = (v[i]*mass + body.v[i]*body.mass)/(mass += body.mass);
                 
-                radius += pow(body.radius, 1.0/3);
+                radius = cbrt(pow(body.radius, 3) + pow(radius, 3));
                 
                 
                 // "delete" body - cheat so as not to break threading
@@ -111,11 +121,28 @@ public class MassiveBody {
             }
         }
     }
-     
+    
+    @Override
     public void step(){
         // Increment by correct step.
         for(int i = 0 ; i < dim; i++){
             pos[i] += (v[i] += a[i]*step)*step;
         }
+    }
+    
+    
+    /*
+     * Quick fixes 
+     */
+    public double getX0() {
+        return pos[0];
+    }
+
+    public double getX1() {
+        return pos[1];
+    }
+
+    public double getX2() {
+        return pos[2];
     }
 }

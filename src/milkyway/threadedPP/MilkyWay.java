@@ -1,5 +1,7 @@
 package milkyway.threadedPP;
 
+import milkyway.*;
+
 /**
  * Main class.
  * 
@@ -12,12 +14,10 @@ public class MilkyWay {
      */
     public static void main(String[] args) {
         
-        Universe.init(3, 1, 0.01);
-        Universe.get().add(new MassiveBody(50, 10, new double[]{400,200, 200}, new double[]{0.1,0, 0}));
-        Universe.get().add(new MassiveBody(50, 10, new double[]{400,600, -200}, new double[]{-0.1,0, 0}));
+        Examples.circle(200);
         
         Universe.get().start();
-        (new DrawThread()).start();
+        (new Thread(new DrawThread(Universe.get()))).start();
     }
     
 }

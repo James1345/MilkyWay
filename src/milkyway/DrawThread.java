@@ -1,5 +1,6 @@
-package milkyway.threadedPP;
+package milkyway;
 
+import java.util.*;
 import java.lang.reflect.InvocationTargetException;
 import java.awt.*;
 import java.awt.event.*;
@@ -15,20 +16,36 @@ import static java.lang.Math.*;
  * 
  * @author james
  */
-public class DrawThread extends Thread{
+public class DrawThread implements Runnable{
     
     // The main app window
-    private JFrame window;
+    protected JFrame window;
     
     // The screen being used.
-    private GraphicsDevice screen;
+    protected GraphicsDevice screen;
     
     // The screen dimensions [width, height]
-    private int width, height;
+    protected int width, height;
+    
+    protected BaseUniverse universe;
+    
+    public DrawThread(BaseUniverse universe){
+        this.universe = universe;
+    }    
     
     @Override
     public void run(){
         
+        createGUI();
+        showGUI();
+        render();
+        
+    }
+    
+    /**
+     * Create the window and set up essential options
+     */
+    public void createGUI(){
         // Create the window and set up essential options.
         try {
             SwingUtilities.invokeAndWait(new Runnable(){
@@ -42,6 +59,7 @@ public class DrawThread extends Thread{
                     window = new JFrame("Milky Way", screen.getDefaultConfiguration());
                     window.setExtendedState(window.getExtendedState()|JFrame.MAXIMIZED_BOTH);
                     window.setResizable(false);
+                    window.setIgnoreRepaint(true);
                     window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                     
                     
@@ -57,44 +75,77 @@ public class DrawThread extends Thread{
                 }
             });
             
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DrawThread.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvocationTargetException ex) {
+        } catch (InterruptedException | InvocationTargetException ex) {
             Logger.getLogger(DrawThread.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+    }
+    
+    /**
+     * Attempt to set the window to fullscreen and show it; create window
+     * BufferStrategy.
+     * 
+     */
+    public void showGUI(){
         // Attempt to set to fullscreen
         if(screen.isFullScreenSupported()){
             window.setUndecorated(true);
-            window.setIgnoreRepaint(true);
             screen.setFullScreenWindow(window);
             DisplayMode dm = screen.getDisplayModes()[0];
             screen.setDisplayMode(dm);
             width = dm.getWidth();
             height = dm.getHeight();
+        } else {
+            width = window.getWidth();
+            height = window.getHeight();
         }
         
         // Show GUI
         window.setVisible(true);
-        
         //Set up buffering
         window.createBufferStrategy(5);
+    }
+    
+    /**
+     * render loop
+     */
+    public void render(){
+        
         BufferStrategy strategy = window.getBufferStrategy();
         
         // Render loop
         while(true){
             // Get Graphics object
             Graphics2D g = (Graphics2D)strategy.getDrawGraphics();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             // Render
             g.setColor(Color.BLACK);
             g.fillRect(0, 0, width, height);
             
-            g.setColor(Color.YELLOW);
+            /*
+             * Create a new list of elements so original is unnaffected
+             * This resolves 2 problems, the new list can be sorted with no 
+             * ill effects to the model list; and the model list may be modified
+             * Without crashing the draw thread.
+             */
             
-            for(MassiveBody body : Universe.get().bodies){
-                    double[] pos = body.getPos();
-                    double rad = body.getRadius();
-                    g.fillOval((int) ceil(pos[0]-rad/2), (int) ceil(pos[1]-rad/2), (int) ceil(rad), (int) ceil(rad));
+            ArrayList<BaseBody> bodies = new ArrayList<>( universe.getBodies() ); 
+            Collections.sort(bodies, new BodySorter());
+            for(BaseBody body : bodies){
+                double rad = body.getRadius();
+                
+                double x =  body.getX0();
+                double y =  body.getX1();
+                float mag = (float) (10000/body.getMass()); // temporary magic number until I work out proper values.
+                Color color = Color.getHSBColor(0.1666f, mag > 1.0f ? 1.0f : mag, 1.0f);
+                g.setColor(color);
+                g.fillOval((int) ceil(x-(rad/2)), (int) ceil(y-(rad/2)), (int) ceil(rad), (int) ceil(rad));
+                /*try{
+                    color = new Color(z, z, 1.0f);
+                } catch (IllegalArgumentException e) {
+                    // Do nothing on exception, just use white. 
+                }
+                
+                g.fillOval(x, y, 5, 5);*/
             }
             g.dispose();
             strategy.show();
@@ -105,8 +156,17 @@ public class DrawThread extends Thread{
                 Logger.getLogger(DrawThread.class.getName()).log(Level.SEVERE, null, e);
             }
         }
-        
     }
     
+    /**
+     * Compares bodies based on their z value (to determine drawing order)
+     */
+    private class BodySorter implements Comparator<BaseBody> {
+        
+        @Override
+        public int compare(BaseBody o1, BaseBody o2){
+            return Double.compare(o1.getX2(), o2.getX2());
+        }
+    }
     
 }

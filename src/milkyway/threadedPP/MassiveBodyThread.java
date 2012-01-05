@@ -30,19 +30,17 @@ public class MassiveBodyThread extends Thread{
                 
                 // Reset barrier, synchronize on the universe object and check for broken to avoid multiple resets
                 synchronized(Universe.get()){
-                    if(barrier.isBroken()) barrier = new CyclicBarrier(Universe.get().bodies.size());
+                    if(barrier.isBroken()) barrier = new CyclicBarrier(Universe.get().getBodies().size());
                 }
                 body.step(); // Step correct amount
                 barrier.await(); //wait for all other steps.
                 
                 // Reset barrier, synchronize on the universe object to avoid multiple resets
                 synchronized(Universe.get()){
-                    if(barrier.isBroken()) barrier = new CyclicBarrier(Universe.get().bodies.size());
+                    if(barrier.isBroken()) barrier = new CyclicBarrier(Universe.get().getBodies().size());
                 }
                 
-            } catch (InterruptedException ex) {
-                Logger.getLogger(MassiveBodyThread.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (BrokenBarrierException ex) {
+            } catch (    InterruptedException | BrokenBarrierException ex) {
                 Logger.getLogger(MassiveBodyThread.class.getName()).log(Level.SEVERE, null, ex);
             }
             
