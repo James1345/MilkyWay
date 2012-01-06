@@ -7,14 +7,14 @@ import static java.lang.Math.*;
  */
 public class Examples {
      public static Universe binaryStar(){
-            Universe u = new Universe(1, 0.01);
+            Universe u = new Universe(1, 0.001);
             u.add(new MassiveBody(50, 10, 400,200, 0, 0.1,0, 0, u));
             u.add(new MassiveBody(50, 10, 400,600, 0, -0.1,0, 0, u));
             return u;
      }
      
      public static Universe fourStar(){
-            Universe u = new Universe(1, 0.01);
+            Universe u = new Universe(1, 0.001);
             u.add(new MassiveBody(100, 10, 400,200, 0, 0.5,0, 0, u));
             u.add(new MassiveBody(100, 10, 400,600, 0, 0,-0.5, 0, u));
             u.add(new MassiveBody(100, 10, 800,200, 0, 0,0.5, 0, u));
@@ -94,10 +94,10 @@ public class Examples {
      }
      
      public static Universe massive(){
-         Universe u = new Universe(1, 1);
+         Universe u = new Universe(1, 0.1);
          for(int i = 0; i < 600; i++){
-            double size = random()*100;
-            u.add(new MassiveBody(size > 90 ? 50 : 10, size > 90 ? 10 : 5, 1300*random(),700*random(), 1000*random(), 0,0, 0, u)); 
+            double size = random()*1000;
+            u.add(new MassiveBody(300, 5, 1300*random(),700*random(), 1000*random(), 10*random() - 5,10*random() - 5, 10*random() - 5, u)); 
             //u.add(new MassiveBody(10 + size/2, 5 + size/10, 1300*random(),700*random(), u, 0,0, u));
          }
          return u;

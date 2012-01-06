@@ -16,11 +16,9 @@ import static java.lang.Math.*;
  */
 public class MassiveBody extends BaseBody {
     
+    
     public MassiveBody(double mass, double radius,double x0, double x1, double x2, double v0, double v1, double v2, Universe u){
-        
         super(mass,radius,x0,x1,x2,v0,v1,v2, u);
-        
-        this.mass = mass + random()*pow(10,Math.getExponent(mass)/8); // add a small random to masses so that one of the two is always greater
     }
     
     /**
@@ -69,8 +67,10 @@ public class MassiveBody extends BaseBody {
              */
             double a = (universe.G * body.mass)/pow(r2 = sqrt(r2), 3);
         
-            // Check for collisions and this having the greater mass
-            if(((radius + body.radius) > r2) && (mass > body.mass)){
+            // Check for collisions
+            // Uses position in list to determine which one absorbs the other
+            // It doesn't matter which but one has to be judged somehow.
+            if(((radius + body.radius) > r2) && (universe.getBodies().indexOf(this) < universe.getBodies().indexOf(body))){
                 
                 // conserve momentum; add mass and radius
                 double totalMass = mass + body.mass;

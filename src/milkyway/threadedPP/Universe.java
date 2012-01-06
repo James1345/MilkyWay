@@ -36,19 +36,34 @@ public class Universe extends BaseUniverse{
     /**
      * A run once run method, does not necessarily need a thread for this
      * implementation of Universe.
+     * 
+     * This method currently splits particles into groups of 10
+     * and assigns one group to each thread.
      */
     public void run(){
-        barrier = new CyclicBarrier(bodies.size());
-        threads = new MassiveBodyThread[bodies.size()];
+        
+        
+        // most useful number of threads is number of processors :P
+        int threadCount = Runtime.getRuntime().availableProcessors(); 
+        barrier = new CyclicBarrier(threadCount);
+        
+        threads = new MassiveBodyThread[threadCount];
+        for(int i = 0; i < threadCount; i++){
+            threads[i] = new MassiveBodyThread("BodyThread: " + i,barrier, this);
+        }
+        
         for(int i = 0; i < bodies.size(); i++){
-            threads[i] = new MassiveBodyThread((MassiveBody)(bodies.get(i)), barrier, this);
-            threads[i].start();
+            threads[i%threadCount].add( (MassiveBody)(bodies.get(i)));
+        }
+        
+        for(Thread t : threads){
+            t.start();
         }
     }
     
     public void done(){
         for(MassiveBodyThread t : threads){
-            t.done();
+            t.interrupt();
         }
     }
     
