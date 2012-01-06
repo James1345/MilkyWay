@@ -16,9 +16,10 @@ import milkyway.*;
  * 
  * @author james
  */
-public class Universe extends BaseUniverse implements Runnable{
+public class Universe extends BaseUniverse {
     
     protected List<Cluster> clusters;
+    protected boolean done = false;
     
     public Universe(double g, double timeStep){
         super(g, timeStep);
@@ -38,7 +39,7 @@ public class Universe extends BaseUniverse implements Runnable{
         }
         
         // Run loop
-        while(true){
+        while(!done){
         
             //assign bodies
             for(BaseBody bbody : bodies){
@@ -75,6 +76,13 @@ public class Universe extends BaseUniverse implements Runnable{
                 cluster.clear();
             }
         }
+        for(Cluster cluster : clusters){
+            // TODO stop all clusters here.
+        }
         
+    }
+    
+    public void done(){
+        done = true;
     }
 }

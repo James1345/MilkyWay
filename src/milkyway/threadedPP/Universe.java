@@ -18,29 +18,14 @@ import java.util.concurrent.*;
  * @author james
  */
 public class Universe extends BaseUniverse{
+
+    //Threading Objects
+    protected CyclicBarrier barrier;
+    protected MassiveBodyThread[] threads;
     
-    // Global Singleton
-    private static Universe one = null;
-    public static void init(double G, double step){
-        one = new Universe(G, step);
-    }
-    public static Universe get(){return one;}
-    
-    // Global instance vars
-    /**
-     * Globally accessible list of Massive Bodies.
-     */
-   
-    
-    // Global number of Dimensions of the universe
-    public final int Dimensions;
-    
-    // Instance methods
-    CyclicBarrier barrier;
-    private Universe(double G, double step){
+    public Universe(double G, double step){
         super(G, step);
-        this.Dimensions = DIM;
-        this.bodies = new ArrayList<BaseBody>();
+        this.bodies = new ArrayList<>();
     }
 
     
@@ -48,10 +33,22 @@ public class Universe extends BaseUniverse{
         bodies.add(body);
     }
     
-    public void start(){
-        barrier = new CyclicBarrier(bodies.size()); 
-        for(BaseBody body : bodies){
-            (new MassiveBodyThread((MassiveBody)body, barrier)).start();
+    /**
+     * A run once run method, does not necessarily need a thread for this
+     * implementation of Universe.
+     */
+    public void run(){
+        barrier = new CyclicBarrier(bodies.size());
+        threads = new MassiveBodyThread[bodies.size()];
+        for(int i = 0; i < bodies.size(); i++){
+            threads[i] = new MassiveBodyThread((MassiveBody)(bodies.get(i)), barrier, this);
+            threads[i].start();
+        }
+    }
+    
+    public void done(){
+        for(MassiveBodyThread t : threads){
+            t.done();
         }
     }
     

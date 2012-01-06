@@ -13,31 +13,33 @@ import java.util.logging.Logger;
 public class MassiveBodyThread extends Thread{
     
     private CyclicBarrier barrier;
+    private final Universe u;
     private MassiveBody body;
+    boolean done = false;
     
-    public MassiveBodyThread(MassiveBody body, CyclicBarrier barrier){
+    public MassiveBodyThread(MassiveBody body, CyclicBarrier barrier, Universe u){
         this.barrier = barrier;
         this.body = body;
+        this.u = u;
     }
     
     @Override
     public void run(){
-        boolean done = false;
         while(!done){
             try {
                 body.update(); // Update acceleration wrt all other boddies
                 barrier.await(); //wait for end of updates
                 
                 // Reset barrier, synchronize on the universe object and check for broken to avoid multiple resets
-                synchronized(Universe.get()){
-                    if(barrier.isBroken()) barrier = new CyclicBarrier(Universe.get().getBodies().size());
+                synchronized(u){
+                    if(barrier.isBroken()) barrier = new CyclicBarrier(u.getBodies().size());
                 }
                 body.step(); // Step correct amount
                 barrier.await(); //wait for all other steps.
                 
                 // Reset barrier, synchronize on the universe object to avoid multiple resets
-                synchronized(Universe.get()){
-                    if(barrier.isBroken()) barrier = new CyclicBarrier(Universe.get().getBodies().size());
+                synchronized(u){
+                    if(barrier.isBroken()) barrier = new CyclicBarrier(u.getBodies().size());
                 }
                 
             } catch (    InterruptedException | BrokenBarrierException ex) {
@@ -46,6 +48,13 @@ public class MassiveBodyThread extends Thread{
             
             
         }
+    }
+    
+    /**
+     * This method ends the thread gracefully by causing run to return.
+     */
+    public void done(){
+        done = true;
     }
     
     

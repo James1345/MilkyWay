@@ -10,7 +10,7 @@ import milkyway.*;
  *
  * @author james
  */
-public class Universe extends BaseUniverse implements Runnable{
+public class Universe extends BaseUniverse {
     
     /**
      * Constructor override.
@@ -32,8 +32,24 @@ public class Universe extends BaseUniverse implements Runnable{
      */
     public native void run0();
     
+    /**
+     * The call to stop the native code.
+     */
+    public native void stop0();
+    
+    /**
+     * Load the C library.
+     */
+    static {
+        System.loadLibrary("nativepp");
+    }
+    
     public void run(){
         run0();
+    }
+    
+    public void done(){
+        stop0();
     }
     
 }

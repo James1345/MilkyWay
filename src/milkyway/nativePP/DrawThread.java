@@ -5,9 +5,7 @@
 package milkyway.nativePP;
 
 import java.awt.*;
-import java.awt.image.*;
-import java.util.logging.*;
-
+import java.awt.event.*;
 /**
  *
  * @author james
@@ -18,31 +16,29 @@ public class DrawThread extends milkyway.DrawThread{
         super(u);
     }
     
+    @Override
+    protected void register(){
+        window.addKeyListener(new KeyAdapter(){
+            @Override
+            public void keyPressed(KeyEvent k){
+                if(k.getKeyChar() == 'q'){
+                    ((Universe)universe).stop0(); // Must free up C resources.
+                    done = true; // exit this thread.
+                }
+            }
+        });
+    }
+    
     /**
-     * Override render to draw the objects retrieved from native code.
+     * Override the drawBodies method to call the native code.
+     * @param g The graphics context to draw to.
      */
     @Override
-    public void render(){
-        BufferStrategy strategy = window.getBufferStrategy();  
+    protected void drawBodies(Graphics2D g){
         Universe u = (Universe)universe;
-        while(true){
-            
-            Graphics2D g = (Graphics2D)strategy.getDrawGraphics();
-            g.setColor(Color.BLACK);
-            g.fillRect(0, 0, width, height);
-            g.setColor(Color.YELLOW);
-            for(double[] x : u.getPositions()){
-                g.fillOval((int)Math.ceil(x[0]), (int)Math.ceil(x[1]), 1, 1);
-            }
-            g.dispose();
-            strategy.show();
-            
-            try{
-                Thread.sleep(16,666); // sleep for approx. 1/60 seconds
-            } catch (InterruptedException e){
-                Logger.getLogger(DrawThread.class.getName()).log(Level.SEVERE, null, e);
-            }
-            
+        g.setColor(Color.YELLOW);
+        for(double[] x : u.getPositions()){
+            g.fillOval((int)Math.ceil(x[0]), (int)Math.ceil(x[1]), 1, 1);
         }
     }
     

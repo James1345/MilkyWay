@@ -10,7 +10,7 @@ import java.util.*;
  * 
  * @author james
  */
-public abstract class BaseUniverse {
+public abstract class BaseUniverse implements Runnable{
     
     // Global number of Dimensions of the universe
     public static final int DIM = 3;
@@ -50,5 +50,11 @@ public abstract class BaseUniverse {
     public List<BaseBody> getBodies(){
         return bodies;
     }
+    
+    /**
+     * This method is called by the draw thread when it is time to exit
+     * It should free up resources and exit gracefully.
+     */
+    public abstract void done();
     
 }

@@ -43,6 +43,9 @@ public class MassiveBody extends BaseBody{
     @Override
     public void update(){
         
+        a0 = 0;
+        a1 = 0;
+        a2 = 0;
         for(MassiveBody body : cluster.bodies){
             if(body==this) continue;
             //calculate gravity

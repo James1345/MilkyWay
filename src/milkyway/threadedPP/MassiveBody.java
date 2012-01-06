@@ -1,7 +1,5 @@
 package milkyway.threadedPP;
 
-import java.awt.Color;
-import java.util.*;
 import milkyway.BaseBody;
 import static java.lang.Math.*;
 
@@ -18,43 +16,12 @@ import static java.lang.Math.*;
  */
 public class MassiveBody extends BaseBody {
     
-    // Essential properties
-    public final Color color;
-    protected double[] pos = null;
-    protected double[] v = null;
-    
-    protected double[] a = null; // acceleration held as instance var so can be shared by methods
-    
-    // Values copied from Universe
-    protected final Universe universe;
-    protected final int dim;
-    protected final double step;
-    
-    public MassiveBody(double mass, double radius, double[] pos, double[] v){
+    public MassiveBody(double mass, double radius,double x0, double x1, double x2, double v0, double v1, double v2, Universe u){
         
-        super(0,0,0,0,0,0,0,0, null); // Bodge fix to satisfy compiler
+        super(mass,radius,x0,x1,x2,v0,v1,v2, u);
         
         this.mass = mass + random()*pow(10,Math.getExponent(mass)/8); // add a small random to masses so that one of the two is always greater
-        this.radius = radius;
-        this.pos = pos;
-        this.v = v;
-        
-        
-        this.color = null;
-        // get values from Universe
-        universe = Universe.get();
-        dim = universe.Dimensions;
-        step = universe.Step;
-        a = new double[dim];
-        
-        // Check arguments
-        if(pos.length != dim || v.length != dim)
-            throw new IllegalArgumentException("Illegal vector dimensions!");
     }
-    
-    public double getRadius(){ return radius; }
-    
-    public double[] getPos(){ return pos; }
     
     /**
      * Calculates the change in velocity of this body due to the 
@@ -70,22 +37,25 @@ public class MassiveBody extends BaseBody {
      */
     @Override
     public void update(){
-        Arrays.fill(a, 0);
+        a0 = 0;
+        a1 = 0;
+        a2 = 0;
         for(BaseBody bbody : universe.getBodies()){
             MassiveBody body = (MassiveBody)bbody;
-            if(this == body) continue; // do not compare this to itself.
+            if(body==this) continue;
+            //calculate gravity
             
             //square of the distance between the two bodies.
             double r2 = 0;
             // direction vector from this to body.
-            double dir[] = new double[dim];
+            double d0,d1,d2;
             
-            //loop to fill values
+            // fill values
             // Processr intensive - Written for efficiency over readability.
             // Direction not normalised - see below.
-            for(int i = 0; i < dim; i++){
-                r2 += pow((dir[i] = body.pos[i] - pos[i]),2);
-            }
+            r2 += pow((d0 = body.x0 - x0), 2);
+            r2 += pow((d1 = body.x1 - x1), 2);
+            r2 += pow((d2 = body.x2 - x2), 2);
             
             // acceleration magnitude
             // Using F=ma and F = GMm/r^2 to calculate a
@@ -95,56 +65,49 @@ public class MassiveBody extends BaseBody {
              * Rather than calculate the unit vector directly (which requires
              * each value in the direction vector to be divided by the magnitude
              * of the vector (which is the root of the already calculated r2)); 
-             * we simply divide the acc variable by a further factor of r.
+             * we simply divide the a variable by a further factor of r.
              */
-            double acc = (universe.G * body.mass)/pow((r2 = sqrt(r2)), 3);
-            
-            
+            double a = (universe.G * body.mass)/pow(r2 = sqrt(r2), 3);
+        
             // Check for collisions and this having the greater mass
             if(((radius + body.radius) > r2) && (mass > body.mass)){
                 
                 // conserve momentum; add mass and radius
-                for(int i = 0; i < dim; i++)
-                    v[i] = (v[i]*mass + body.v[i]*body.mass)/(mass += body.mass);
+                double totalMass = mass + body.mass;
+                
+                v0 = (v0*mass + body.v0*body.mass)/(totalMass);
+                v1 = (v1*mass + body.v1*body.mass)/(totalMass);
+                v2 = (v2*mass + body.v2*body.mass)/(totalMass);
                 
                 radius = cbrt(pow(body.radius, 3) + pow(radius, 3));
-                
+                mass = totalMass;
                 
                 // "delete" body - cheat so as not to break threading
                 body.mass = 0;
                 body.radius = 0;
             }
-            
-            // add to acceleration vector 
-            for(int i = 0; i < dim; i++){
-                a[i] += dir[i]*acc;
-            }
+            //update acceleration vector
+            a0 += d0*a;
+            a1 += d1*a;
+            a2 += d2*a;
         }
     }
     
     @Override
     public void step(){
         // Increment by correct step.
-        for(int i = 0 ; i < dim; i++){
-            v[i] += a[i]*step/2;
-            pos[i] += v[i]*step;
-            v[i] += a[i]*step/2;
-        }
-    }
-    
-    
-    /*
-     * Quick fixes 
-     */
-    public double getX0() {
-        return pos[0];
-    }
-
-    public double getX1() {
-        return pos[1];
-    }
-
-    public double getX2() {
-        return pos[2];
+        double halfStep = scalb(universe.Step, -1); // Efficient (bitwise) divide by 2
+        v0 += a0*halfStep; 
+        x0 += v0*universe.Step;
+        v0 += a0*halfStep;
+        
+        v1 += a1*halfStep; 
+        x1 += v1*universe.Step;
+        v1 += a1*halfStep;
+        
+        v2 += a2*halfStep; 
+        x2 += v2*universe.Step;
+        v2 += a2*halfStep;
+        
     }
 }

@@ -14,10 +14,9 @@ public class MilkyWay {
      */
     public static void main(String[] args) {
         
-        Examples.circle(300);
-        
-        Universe.get().start();
-        (new Thread(new DrawThread(Universe.get()))).start();
+        Universe u = Examples.binaryStar();
+        u.run();
+        (new Thread(new DrawThread(u))).start();
     }
     
 }
