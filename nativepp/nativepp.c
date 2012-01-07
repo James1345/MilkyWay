@@ -8,12 +8,21 @@
 /* Global Variables*/
 #define G 1 /* Universal Gravitational Constant */
 
-#define BODY_COUNT 200 /* Temporary Static definition */
+#define BODY_COUNT 1500 /* Temporary Static definition */
 body* bodies[BODY_COUNT]; /* array of body pointers */
 int body_count = BODY_COUNT; /* Number of massive bodies */
 double time_step = 0.01; /* Time per loop */
 
 int done = 0; /* Boolean to check if done, checked each loop. If done, free resources */
+
+/* Testing methods */
+int main(int argc, char** argv)
+{
+    run0();
+}
+
+
+/* Native Methods */
 
 /* Create a new body and return the pointer to it. */
 body * new_body(double mass, double x0, double x1, double x2, double v0, double v1, double v2)
@@ -32,19 +41,20 @@ body * new_body(double mass, double x0, double x1, double x2, double v0, double 
 
 void update(body * b)
 {
+    int count = 0;
+    
     b->a0 = 0;
     b->a1 = 0;
     b->a2 = 0;
-    int count = 0;
+    
     while(count++ < body_count)
     {
+        double r2, d0, d1, d2, a;
+        
         body * that = bodies[count];
         if(b == that) continue;
         
-        /* square of the distance between the two bodies. */
-        double r2 = 0;
-        /* direction vector from this to body. */
-        double d0,d1,d2;
+        
 
         /* 
          * fill values
@@ -65,7 +75,8 @@ void update(body * b)
          * of the vector (which is the root of the already calculated r2)); 
          * we simply divide the a variable by a further factor of r.
          */
-        double a = (G * that->mass)/pow((r2 = sqrt(r2)), 3);
+        r2 = sqrt(r2);
+        a = (G * that->mass)/pow((r2), 3.0);
 
         /* update acceleration vector */
         b->a0 += d0*a;
@@ -90,32 +101,16 @@ void step(body * b, double time)
     b->v2 += (b->a2)*ldexp(time, -1);
 }
 
-/* JNI Methods */
-
-/*
- * Class:     milkyway_nativePP_Universe
- * Method:    getPositions
- * Signature: ()[[D
- */
-JNIEXPORT jobjectArray JNICALL Java_milkyway_nativePP_Universe_getPositions(JNIEnv * env, jobject obj)
-{
-    
-}
-
-/*
- * Class:     milkyway_nativePP_Universe
- * Method:    run0
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_milkyway_nativePP_Universe_run0(JNIEnv * env, jobject obj)
+void run0()
 {
     /* Setup */
     int count = 0;
     while(count++ < body_count)
     {
-        bodies[count] = new_body(); /* TODO Fill in values for bodies */
+        bodies[count] = new_body(10, count, 0, 0, 0, 0, 0); /* TODO Fill in values for bodies */
     }
     
+    /* Update all bodies while running */
     while(!done)
     {
         count = 0;
@@ -131,12 +126,70 @@ JNIEXPORT void JNICALL Java_milkyway_nativePP_Universe_run0(JNIEnv * env, jobjec
     }
     
     /* Free resources when done*/
-    int count = 0;
+    count = 0;
     while(count++ < body_count)
     {
         free(bodies[count]);
     }
     
+}
+
+void stop0()
+{
+    done = 1;
+}
+
+/* 
+ * JNI Methods 
+ * 
+ * JNI methods are mostly wrappers around normal functions, to allow java to call those functions
+ */
+
+/*
+ * Class:     milkyway_nativePP_Universe
+ * Method:    getPositions
+ * Signature: ()[[D
+ */
+JNIEXPORT jobjectArray JNICALL Java_milkyway_nativePP_Universe_getPositions(JNIEnv * env, jobject obj)
+{
+    int count = 0;
+    jobjectArray result;
+    jclass doubleArrayClass = (*env)->FindClass(env, "[D");
+    if(doubleArrayClass == NULL)
+    {
+        return NULL;
+    }
+    result = (*env)->NewObjectArray(env, body_count, doubleArrayClass, NULL);
+    
+    while(count++ < body_count)
+    {
+        jdouble tmp[3];
+        int i;
+        jdoubleArray darr = (*env)->NewDoubleArray(env, 3);
+        if(darr == NULL)
+        {
+            return NULL;
+        }
+        tmp[0] = bodies[count]->x0;
+        tmp[1] = bodies[count]->x1;
+        tmp[2] = bodies[count]->x2;
+        
+        (*env)->SetDoubleArrayRegion(env, darr, 0, 3, tmp);
+        (*env)->SetObjectArrayElement(env, result, count, darr);
+        (*env)->DeleteLocalRef(env, darr);
+    }
+    
+    return result;
+}
+
+/*
+ * Class:     milkyway_nativePP_Universe
+ * Method:    run0
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_milkyway_nativePP_Universe_run0(JNIEnv * env, jobject obj)
+{
+    run0();
 }
 
 /*
@@ -147,5 +200,5 @@ JNIEXPORT void JNICALL Java_milkyway_nativePP_Universe_run0(JNIEnv * env, jobjec
 /* Set done to 1, called from the AWT event thread to signify the program should exit.*/
 JNIEXPORT void JNICALL Java_milkyway_nativePP_Universe_stop0 (JNIEnv * env, jobject obj)
 {
-    done = 1;
+    stop0();
 }

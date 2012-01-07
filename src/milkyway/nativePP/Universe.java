@@ -41,7 +41,7 @@ public class Universe extends BaseUniverse {
      * Load the C library.
      */
     static {
-        System.loadLibrary("nativepp");
+        System.load("/home/james/workspace/MilkyWay/nativepp/dist/Release/GNU-Linux-x86/libnativepp.so");
     }
     
     public void run(){

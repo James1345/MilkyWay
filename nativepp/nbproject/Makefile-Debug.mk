@@ -38,7 +38,7 @@ OBJECTFILES= \
 
 
 # C Compiler Flags
-CFLAGS=-shared
+CFLAGS=-m64 -lm
 
 # CC Compiler Flags
 CCFLAGS=
@@ -55,16 +55,16 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libnativepp.so
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/nativepp
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libnativepp.so: ${OBJECTFILES}
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/nativepp: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.c} -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libnativepp.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/nativepp ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/nativepp.o: nativepp.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -g -I/usr/java/jdk1.7.0/include/ -I/usr/java/jdk1.7.0/include/linux/ -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/nativepp.o nativepp.c
+	$(COMPILE.c) -g -I/usr/java/jdk1.7.0/include/ -I/usr/java/jdk1.7.0/include/linux/ -MMD -MP -MF $@.d -o ${OBJECTDIR}/nativepp.o nativepp.c
 
 # Subprojects
 .build-subprojects:
@@ -72,7 +72,7 @@ ${OBJECTDIR}/nativepp.o: nativepp.c
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libnativepp.so
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/nativepp
 
 # Subprojects
 .clean-subprojects:

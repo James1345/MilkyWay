@@ -20,6 +20,8 @@ extern "C" {
     
     void update(body * b);
     void step(body * b, double time);
+    void run0();
+    void stop0();
 
 
 #ifdef	__cplusplus

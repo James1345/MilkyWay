@@ -10,14 +10,16 @@ package milkyway.nativePP;
  */
 public class MilkyWay {
     
-    public static void main(String[] args){
+    public static void main(String[] args) throws Exception{
         
         Universe u = new Universe();
         DrawThread t = new DrawThread(u);
-        
+        u.run();
+        /*
         (new Thread(u, "Universe")).start();
         (new Thread(t, "Drawing")).start();
-        
+    
+         */
     }
     
     

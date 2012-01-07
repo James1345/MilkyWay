@@ -38,7 +38,7 @@ OBJECTFILES= \
 
 
 # C Compiler Flags
-CFLAGS=
+CFLAGS=-lm
 
 # CC Compiler Flags
 CCFLAGS=
@@ -64,7 +64,7 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libnativepp.so: ${OBJECTFILES}
 ${OBJECTDIR}/nativepp.o: nativepp.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O2 -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/nativepp.o nativepp.c
+	$(COMPILE.c) -O2 -I/usr/java/jdk1.7.0/include/ -I/usr/java/jdk1.7.0/include/linux/ -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/nativepp.o nativepp.c
 
 # Subprojects
 .build-subprojects:
